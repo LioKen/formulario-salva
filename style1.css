@@ -160,3 +160,36 @@ h2 {
         background-color: #e4fbfb;
         border-bottom: 2px solid #42ab49;
     }
+
+        /* Estilos para el spinner */
+
+    .spinner {
+      animation: rotate 2s linear infinite;
+      height: 50px;
+      width: 50px;
+      margin: auto;
+    }
+    .spinner .path {
+      stroke: #005286;
+      stroke-linecap: round;
+      animation: dash 1.5s ease-in-out infinite;
+    }
+    @keyframes rotate {
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes dash {
+      0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+      100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    }
+    /* Estilos para el mensaje de confirmación */
+    #confirmationMessage {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e0ffe0;
+      color: #006400;
+      border: 1px solid #006400;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 1.1em;
+    }
