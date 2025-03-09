@@ -1,0 +1,23 @@
+{
+  "descripcion": [
+    "Repuesto A",
+    "Repuesto B",
+    "Repuesto C"
+  ],
+  "und_de_medida": [
+    "Und",
+    "Metro"
+  ],
+  "tipo_de_pedido": [
+    "Emergencia",
+    "Normal"
+  ],
+  "maquina": [
+    "MAQUINA 1",
+    "MAQUINA 2"
+  ],
+  "solicitante": [
+    "SOLICITANTE 1",
+    "SOLICITANTE 2"
+  ]
+}
