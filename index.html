@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulario para Solicitudes</title>
+  <title>Formulario de solicitudes</title>
 
+  <!-- Preload y estilos -->
   <link rel="preload" href="normalize.css" as="style">
   <link rel="stylesheet" href="normalize.css">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto&display=swap" rel="stylesheet">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Krub:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
-
+  
   <link rel="preload" href="style1.css" as="style">
   <link rel="stylesheet" href="style1.css">
-  
 </head>
 <body>
   <header class="header">
@@ -45,7 +46,7 @@
       <!-- Formulario -->
       <form id="miFormulario" class="formulario">
         <div class="encabezado">
-          <h2>*Por favor, completa el formulario con la información del repuesto e inspección.</h2>
+          <h2>Formulario de solicitudes</h2>
         </div>
 
         <div class="contenedor-campos">
@@ -54,21 +55,17 @@
             <label>DESCRIPCION</label>
             <input list="descripcionList" name="descripcion" class="input-text" placeholder="Selecciona o escribe la descripción" required>
             <datalist id="descripcionList">
-              <option value="Repuesto A">
-              <option value="Repuesto B">
-              <option value="Repuesto C">
-              <!-- Agrega más opciones según necesites -->
+              <!-- Se cargarán dinámicamente -->
             </datalist>
           </div>
 
-          <!-- UND DE MEDIDA -->
+          <!-- UND DE MEDIDA (autocompletable) -->
           <div class="campo">
             <label>UND DE MEDIDA</label>
-            <select name="und_de_medida" class="input-text" required>
-              <option value="" disabled selected>Selecciona la unidad</option>
-              <option value="Und">Und</option>
-              <option value="Metro">Metro</option>
-            </select>
+            <input list="und_de_medidaList" name="und_de_medida" class="input-text" placeholder="Selecciona o escribe la unidad" required>
+            <datalist id="und_de_medidaList">
+              <!-- Se cargarán dinámicamente -->
+            </datalist>
           </div>
 
           <!-- CANTIDAD -->
@@ -77,14 +74,13 @@
             <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
-          <!-- TIPO DE PEDIDO -->
+          <!-- TIPO DE PEDIDO (autocompletable) -->
           <div class="campo">
             <label>TIPO DE PEDIDO</label>
-            <select name="tipo_de_pedido" class="input-text" required>
-              <option value="" disabled selected>Selecciona el tipo de pedido</option>
-              <option value="Emergencia">Emergencia</option>
-              <option value="Normal">Normal</option>
-            </select>
+            <input list="tipo_de_pedidoList" name="tipo_de_pedido" class="input-text" placeholder="Selecciona o escribe el tipo de pedido" required>
+            <datalist id="tipo_de_pedidoList">
+              <!-- Se cargarán dinámicamente -->
+            </datalist>
           </div>
 
           <!-- OT -->
@@ -104,9 +100,7 @@
             <label>MAQUINA</label>
             <input list="maquinaList" name="maquina" class="input-text" placeholder="Selecciona o escribe la máquina" required>
             <datalist id="maquinaList">
-              <option value="MAQUINA 1">
-              <option value="MAQUINA 2">
-              <!-- Agrega más opciones si es necesario -->
+              <!-- Se cargarán dinámicamente -->
             </datalist>
           </div>
 
@@ -115,9 +109,7 @@
             <label>SOLICITANTE</label>
             <input list="solicitanteList" name="solicitante" class="input-text" placeholder="Selecciona o escribe el solicitante" required>
             <datalist id="solicitanteList">
-              <option value="SOLICITANTE 1">
-              <option value="SOLICITANTE 2">
-              <!-- Agrega más opciones según necesites -->
+              <!-- Se cargarán dinámicamente -->
             </datalist>
           </div>
         </div>
@@ -148,7 +140,6 @@
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
       e.preventDefault();
       var form = this;
-      // Mostrar spinner y ocultar mensaje de confirmación
       var spinner = document.getElementById('spinner');
       var confirmationMessage = document.getElementById('confirmationMessage');
       spinner.style.display = 'block';
@@ -156,16 +147,15 @@
       
       var data = {
         descripcion: form.querySelector('input[name="descripcion"]').value,
-        und_de_medida: form.querySelector('[name="und_de_medida"]').value,
+        und_de_medida: form.querySelector('input[name="und_de_medida"]').value,
         cantidad: form.querySelector('input[name="cantidad"]').value,
-        tipo_de_pedido: form.querySelector('[name="tipo_de_pedido"]').value,
+        tipo_de_pedido: form.querySelector('input[name="tipo_de_pedido"]').value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
         maquina: form.querySelector('input[name="maquina"]').value,
         solicitante: form.querySelector('input[name="solicitante"]').value
       };
 
-      // URL del Google Apps Script
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwKnAzxJtVAkx7tED6OcFXWXfFQMFr7hpvW5uCd4jI6npEfkXo4fD2Rb4Gjiir55Xoc/exec';
       
       fetch(scriptURL, {
@@ -175,9 +165,8 @@
         body: JSON.stringify(data)
       })
       .then(response => {
-        // Ocultar spinner y mostrar mensaje de confirmación
         spinner.style.display = 'none';
-        confirmationMessage.textContent = '¡Formulario enviado con éxito! Gracias por tu colaboración.';
+        confirmationMessage.textContent = 'Su solicitud ha sido enviada correctamente.';
         confirmationMessage.style.display = 'block';
         form.reset();
       })
@@ -189,5 +178,25 @@
       });
     });
   </script>
+  
+  <!-- Script para cargar las opciones desde el archivo JSON -->
+  <script>
+    fetch('opciones.json')
+      .then(response => response.json())
+      .then(data => {
+        Object.keys(data).forEach(key => {
+          const datalist = document.getElementById(key + 'List');
+          if (datalist) {
+            data[key].forEach(optionValue => {
+              const option = document.createElement('option');
+              option.value = optionValue;
+              datalist.appendChild(option);
+            });
+          }
+        });
+      })
+      .catch(error => console.error('Error al cargar el archivo JSON:', error));
+  </script>
 </body>
 </html>
+
