@@ -9,6 +9,8 @@
     --input-bg: #ffffff;
     --input-border: #dfe3e8;
     --input-focus: #3498db;
+    --header-bg: #e74c3c; /* Color fuerte para la cabecera del formulario */
+    --header-text: #ffffff;
 }
 
 /* Reset y configuración global */
@@ -37,7 +39,7 @@ h2 {
     margin-bottom: 1.5rem;
 }
 
-/* Header */
+/* Header principal */
 header.header {
     background-color: var(--fondo);
     display: flex;
@@ -67,11 +69,23 @@ header.header {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.encabezado {
-    text-align: center;
+/* Encabezado del formulario con ícono y color destacado */
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    padding: 1rem;
+    border-radius: 0.5rem;
     margin-bottom: 2rem;
 }
 
+.header-icon {
+    font-size: 2.4rem;
+}
+
+/* Contenedor de campos */
 .contenedor-campos {
     display: grid;
     grid-template-columns: 1fr;
@@ -113,7 +127,7 @@ header.header {
     box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
 }
 
-/* Personalización para selects: se les agrega un ícono y se mantienen uniformes */
+/* Personalización para selects */
 select.input-text {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -215,4 +229,11 @@ footer {
 
 .suggestions-list li:hover {
     background-color: var(--grisclaro);
+}
+
+/* En móviles, lista de sugerencias más alta */
+@media (max-width: 600px) {
+  .suggestions-list {
+    max-height: 300px;
+  }
 }
