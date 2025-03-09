@@ -9,8 +9,11 @@
     --input-bg: #ffffff;
     --input-border: #dfe3e8;
     --input-focus: #3498db;
-    --header-bg: #e74c3c; /* Color fuerte para la cabecera del formulario */
-    --header-text: #ffffff;
+    --header-bg: #e74c3c;         /* Fondo del encabezado del formulario */
+    --header-text: #ffffff;       /* Texto del encabezado */
+    --error-bg: #f8d7da;          /* Fondo del mensaje de error */
+    --error-text: #721c24;        /* Texto del mensaje de error */
+    --form-border: #3498db;       /* Color del borde del formulario */
 }
 
 /* Reset y configuración global */
@@ -66,10 +69,11 @@ header.header {
     background-color: var(--blanco);
     padding: 2rem;
     border-radius: 1rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 2px solid var(--form-border);
 }
 
-/* Encabezado del formulario con ícono y color destacado */
+/* Encabezado del formulario */
 .form-header {
     display: flex;
     align-items: center;
@@ -83,6 +87,17 @@ header.header {
 
 .header-icon {
     font-size: 2.4rem;
+}
+
+/* Mensaje de error */
+.error-message {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-text);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 /* Contenedor de campos */
@@ -110,7 +125,7 @@ header.header {
     color: var(--oscuro);
 }
 
-/* Estilo de inputs y áreas de texto */
+/* Inputs y áreas de texto */
 .input-text {
     width: 100%;
     padding: 1rem;
@@ -201,7 +216,7 @@ footer {
     margin-top: 2rem;
 }
 
-/* Estilos para autocompletado personalizado */
+/* Autocompletar personalizado */
 .autocomplete-container {
     position: relative;
 }
@@ -233,7 +248,7 @@ footer {
 
 /* En móviles, lista de sugerencias más alta */
 @media (max-width: 600px) {
-  .suggestions-list {
-    max-height: 300px;
-  }
+    .suggestions-list {
+        max-height: 300px;
+    }
 }
