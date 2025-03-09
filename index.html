@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulario de solicitudes</title>
+  <title>Formulario de Solicitudes</title>
 
   <!-- Preload y estilos -->
   <link rel="preload" href="normalize.css" as="style">
@@ -13,10 +13,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto&display=swap" rel="stylesheet">
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Krub:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
-  
   <link rel="preload" href="style1.css" as="style">
   <link rel="stylesheet" href="style1.css">
 </head>
@@ -24,6 +20,7 @@
   <header class="header">
     <div class="header__logo">
       <a href="index.html">
+        <!-- Logo SVG -->
         <svg width="131" height="44" viewBox="0 0 131 44" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Aquí van los paths de tu logo -->
         </svg>
@@ -31,6 +28,7 @@
     </div>
     <div class="header__icono">
       <a href="index.html">
+        <!-- Home icon SVG -->
         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="40" height="40" viewBox="0 0 24 24" stroke-width="2" stroke="#005286" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
           <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
@@ -43,14 +41,15 @@
 
   <main>
     <section>
-      <!-- Formulario -->
       <form id="miFormulario" class="formulario">
-        <!-- Encabezado del formulario con ícono y color destacado -->
+        <!-- Encabezado con ícono y color destacado -->
         <div class="form-header">
           <span class="header-icon">📝</span>
           <h2>Formulario de Solicitudes</h2>
         </div>
-
+        <!-- Contenedor para mostrar mensajes de error personalizados -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
         <div class="contenedor-campos">
           <!-- DESCRIPCION (autocompletable con validación) -->
           <div class="campo">
@@ -61,13 +60,12 @@
             </div>
           </div>
 
-          <!-- UND DE MEDIDA (autocompletable con validación) -->
+          <!-- UND DE MEDIDA (dropdown select) -->
           <div class="campo">
             <label>UND DE MEDIDA</label>
-            <div class="autocomplete-container">
-              <input type="text" id="und_de_medidaInput" name="und_de_medida" class="input-text" placeholder="Selecciona o escribe la unidad" autocomplete="off" required>
-              <ul id="und_de_medidaSuggestions" class="suggestions-list"></ul>
-            </div>
+            <select id="und_de_medidaSelect" name="und_de_medida" class="input-text" required>
+              <option value="">Selecciona la unidad</option>
+            </select>
           </div>
 
           <!-- CANTIDAD -->
@@ -76,13 +74,12 @@
             <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
-          <!-- TIPO DE PEDIDO (autocompletable con validación) -->
+          <!-- TIPO DE PEDIDO (dropdown select) -->
           <div class="campo">
             <label>TIPO DE PEDIDO</label>
-            <div class="autocomplete-container">
-              <input type="text" id="tipo_de_pedidoInput" name="tipo_de_pedido" class="input-text" placeholder="Selecciona o escribe el tipo de pedido" autocomplete="off" required>
-              <ul id="tipo_de_pedidoSuggestions" class="suggestions-list"></ul>
-            </div>
+            <select id="tipo_de_pedidoSelect" name="tipo_de_pedido" class="input-text" required>
+              <option value="">Selecciona el tipo de pedido</option>
+            </select>
           </div>
 
           <!-- OT -->
@@ -120,14 +117,14 @@
           <input class="boton wm-sm-100" type="submit" value="Enviar">
         </div>
 
-        <!-- Spinner para indicar espera durante el envío -->
+        <!-- Icono giratorio (spinner) mientras se envía el formulario -->
         <div id="spinner" style="display: none; text-align: center; margin-top: 10px;">
           <svg class="spinner" viewBox="0 0 50 50">
             <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
           </svg>
         </div>
 
-        <!-- Mensaje de confirmación de envío -->
+        <!-- Mensaje de confirmación del envío -->
         <div id="confirmationMessage" style="display: none;"></div>
       </form>
     </section>
@@ -137,9 +134,9 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Scripts -->
+  <!-- Script: gestión de autocompletado, carga de datos y validación -->
   <script>
-    // Variables para almacenar datos de cada campo (se cargarán desde el archivo JSON)
+    // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
     let datosUndDeMedida = [];
     let datosTipoDePedido = [];
@@ -155,10 +152,25 @@
         datosTipoDePedido = data.tipo_de_pedido || [];
         datosMaquina = data.maquina || [];
         datosSolicitante = data.solicitante || [];
+
+        // Poblar los dropdowns para UND DE MEDIDA y TIPO DE PEDIDO
+        populateSelect('und_de_medidaSelect', datosUndDeMedida);
+        populateSelect('tipo_de_pedidoSelect', datosTipoDePedido);
       })
       .catch(error => console.error('Error al cargar el archivo JSON:', error));
 
-    // Función para filtrar y mostrar sugerencias
+    // Función para poblar un elemento select con opciones
+    function populateSelect(selectId, optionsArray) {
+      const selectElement = document.getElementById(selectId);
+      optionsArray.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        selectElement.appendChild(option);
+      });
+    }
+
+    // Función para filtrar y mostrar sugerencias en inputs autocompletable
     function mostrarSugerencias(inputElement, suggestionsElement, datos) {
       const query = inputElement.value.toLowerCase();
       suggestionsElement.innerHTML = '';
@@ -174,23 +186,11 @@
       });
     }
 
-    // Asignar eventos de autocompletado para cada campo
+    // Asignar eventos de autocompletado
     const descripcionInput = document.getElementById('descripcionInput');
     const descripcionSuggestions = document.getElementById('descripcionSuggestions');
     descripcionInput.addEventListener('input', function() {
       mostrarSugerencias(descripcionInput, descripcionSuggestions, datosDescripcion);
-    });
-
-    const undDeMedidaInput = document.getElementById('und_de_medidaInput');
-    const undDeMedidaSuggestions = document.getElementById('und_de_medidaSuggestions');
-    undDeMedidaInput.addEventListener('input', function() {
-      mostrarSugerencias(undDeMedidaInput, undDeMedidaSuggestions, datosUndDeMedida);
-    });
-
-    const tipoDePedidoInput = document.getElementById('tipo_de_pedidoInput');
-    const tipoDePedidoSuggestions = document.getElementById('tipo_de_pedidoSuggestions');
-    tipoDePedidoInput.addEventListener('input', function() {
-      mostrarSugerencias(tipoDePedidoInput, tipoDePedidoSuggestions, datosTipoDePedido);
     });
 
     const maquinaInput = document.getElementById('maquinaInput');
@@ -205,7 +205,7 @@
       mostrarSugerencias(solicitanteInput, solicitanteSuggestions, datosSolicitante);
     });
 
-    // Cerrar sugerencias al hacer clic fuera del contenedor
+    // Cerrar sugerencias al hacer clic fuera de la caja de autocompletar
     document.addEventListener('click', function(e) {
       document.querySelectorAll('.autocomplete-container').forEach(container => {
         if (!container.contains(e.target)) {
@@ -214,56 +214,65 @@
       });
     });
 
-    // Validar que el valor ingresado sea de la lista antes de enviar
+    // Funciones para mostrar y limpiar mensajes de error
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+    function clearError() {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = '';
+      errorDiv.style.display = 'none';
+    }
+
+    // Validación personalizada y envío del formulario
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
-      // Validar DESCRIPCION
+      e.preventDefault();
+      clearError();
+
+      // Validar campos autocompletable (DESCRIPCION, MAQUINA, SOLICITANTE)
       if (!datosDescripcion.includes(descripcionInput.value)) {
-        e.preventDefault();
-        alert('Por favor, selecciona un valor válido para DESCRIPCION.');
+        showError('Por favor, selecciona un valor válido para DESCRIPCION.');
         descripcionInput.focus();
         return;
       }
-      // Validar UND DE MEDIDA
-      if (!datosUndDeMedida.includes(undDeMedidaInput.value)) {
-        e.preventDefault();
-        alert('Por favor, selecciona un valor válido para UND DE MEDIDA.');
-        undDeMedidaInput.focus();
-        return;
-      }
-      // Validar TIPO DE PEDIDO
-      if (!datosTipoDePedido.includes(tipoDePedidoInput.value)) {
-        e.preventDefault();
-        alert('Por favor, selecciona un valor válido para TIPO DE PEDIDO.');
-        tipoDePedidoInput.focus();
-        return;
-      }
-      // Validar MAQUINA
       if (!datosMaquina.includes(maquinaInput.value)) {
-        e.preventDefault();
-        alert('Por favor, selecciona un valor válido para MAQUINA.');
+        showError('Por favor, selecciona un valor válido para MAQUINA.');
         maquinaInput.focus();
         return;
       }
-      // Validar SOLICITANTE
       if (!datosSolicitante.includes(solicitanteInput.value)) {
-        e.preventDefault();
-        alert('Por favor, selecciona un valor válido para SOLICITANTE.');
+        showError('Por favor, selecciona un valor válido para SOLICITANTE.');
         solicitanteInput.focus();
         return;
       }
+      // Validar que se haya seleccionado una opción en los dropdowns
+      const undSelect = document.getElementById('und_de_medidaSelect');
+      if (undSelect.value === "") {
+        showError('Por favor, selecciona una unidad de medida.');
+        undSelect.focus();
+        return;
+      }
+      const tipoSelect = document.getElementById('tipo_de_pedidoSelect');
+      if (tipoSelect.value === "") {
+        showError('Por favor, selecciona un tipo de pedido.');
+        tipoSelect.focus();
+        return;
+      }
 
-      // Mostrar spinner y enviar datos a Google Sheets
-      var form = this;
-      var spinner = document.getElementById('spinner');
-      var confirmationMessage = document.getElementById('confirmationMessage');
+      // Mostrar spinner y enviar datos
+      const form = this;
+      const spinner = document.getElementById('spinner');
+      const confirmationMessage = document.getElementById('confirmationMessage');
       spinner.style.display = 'block';
       confirmationMessage.style.display = 'none';
 
-      var data = {
+      const data = {
         descripcion: descripcionInput.value,
-        und_de_medida: undDeMedidaInput.value,
+        und_de_medida: undSelect.value,
         cantidad: form.querySelector('input[name="cantidad"]').value,
-        tipo_de_pedido: tipoDePedidoInput.value,
+        tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
         maquina: maquinaInput.value,
@@ -286,7 +295,7 @@
       })
       .catch(error => {
         spinner.style.display = 'none';
-        confirmationMessage.textContent = 'Error al enviar datos, por favor intenta de nuevo.';
+        confirmationMessage.textContent = 'Error al enviar datos, por favor intente de nuevo.';
         confirmationMessage.style.display = 'block';
         console.error('Error!', error.message);
       });
