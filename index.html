@@ -53,19 +53,19 @@
           <!-- DESCRIPCION (autocompletable) -->
           <div class="campo">
             <label>DESCRIPCION</label>
-            <input list="descripcionList" name="descripcion" class="input-text" placeholder="Selecciona o escribe la descripción" required>
-            <datalist id="descripcionList">
-              <!-- Se cargarán dinámicamente -->
-            </datalist>
+            <div class="autocomplete-container">
+              <input type="text" id="descripcionInput" name="descripcion" class="input-text" placeholder="Selecciona o escribe la descripción" autocomplete="off" required>
+              <ul id="descripcionSuggestions" class="suggestions-list"></ul>
+            </div>
           </div>
 
           <!-- UND DE MEDIDA (autocompletable) -->
           <div class="campo">
             <label>UND DE MEDIDA</label>
-            <input list="und_de_medidaList" name="und_de_medida" class="input-text" placeholder="Selecciona o escribe la unidad" required>
-            <datalist id="und_de_medidaList">
-              <!-- Se cargarán dinámicamente -->
-            </datalist>
+            <div class="autocomplete-container">
+              <input type="text" id="und_de_medidaInput" name="und_de_medida" class="input-text" placeholder="Selecciona o escribe la unidad" autocomplete="off" required>
+              <ul id="und_de_medidaSuggestions" class="suggestions-list"></ul>
+            </div>
           </div>
 
           <!-- CANTIDAD -->
@@ -77,10 +77,10 @@
           <!-- TIPO DE PEDIDO (autocompletable) -->
           <div class="campo">
             <label>TIPO DE PEDIDO</label>
-            <input list="tipo_de_pedidoList" name="tipo_de_pedido" class="input-text" placeholder="Selecciona o escribe el tipo de pedido" required>
-            <datalist id="tipo_de_pedidoList">
-              <!-- Se cargarán dinámicamente -->
-            </datalist>
+            <div class="autocomplete-container">
+              <input type="text" id="tipo_de_pedidoInput" name="tipo_de_pedido" class="input-text" placeholder="Selecciona o escribe el tipo de pedido" autocomplete="off" required>
+              <ul id="tipo_de_pedidoSuggestions" class="suggestions-list"></ul>
+            </div>
           </div>
 
           <!-- OT -->
@@ -98,19 +98,19 @@
           <!-- MAQUINA (autocompletable) -->
           <div class="campo">
             <label>MAQUINA</label>
-            <input list="maquinaList" name="maquina" class="input-text" placeholder="Selecciona o escribe la máquina" required>
-            <datalist id="maquinaList">
-              <!-- Se cargarán dinámicamente -->
-            </datalist>
+            <div class="autocomplete-container">
+              <input type="text" id="maquinaInput" name="maquina" class="input-text" placeholder="Selecciona o escribe la máquina" autocomplete="off" required>
+              <ul id="maquinaSuggestions" class="suggestions-list"></ul>
+            </div>
           </div>
 
           <!-- SOLICITANTE (autocompletable) -->
           <div class="campo">
             <label>SOLICITANTE</label>
-            <input list="solicitanteList" name="solicitante" class="input-text" placeholder="Selecciona o escribe el solicitante" required>
-            <datalist id="solicitanteList">
-              <!-- Se cargarán dinámicamente -->
-            </datalist>
+            <div class="autocomplete-container">
+              <input type="text" id="solicitanteInput" name="solicitante" class="input-text" placeholder="Selecciona o escribe el solicitante" autocomplete="off" required>
+              <ul id="solicitanteSuggestions" class="suggestions-list"></ul>
+            </div>
           </div>
         </div>
 
@@ -135,6 +135,7 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
+  <!-- Scripts -->
   <!-- Script para enviar datos a Google Sheets mediante Google Apps Script -->
   <script>
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
@@ -179,23 +180,50 @@
     });
   </script>
   
-  <!-- Script para cargar las opciones desde el archivo JSON -->
+  <!-- Script para cargar opciones desde el JSON y gestionar el autocompletado personalizado (ejemplo para DESCRIPCION) -->
   <script>
+    // Variable para almacenar datos del campo "DESCRIPCION"
+    let datosDescripcion = []; // Se cargarán desde el archivo JSON
+
+    // Cargar datos desde opciones.json
     fetch('opciones.json')
       .then(response => response.json())
       .then(data => {
-        Object.keys(data).forEach(key => {
-          const datalist = document.getElementById(key + 'List');
-          if (datalist) {
-            data[key].forEach(optionValue => {
-              const option = document.createElement('option');
-              option.value = optionValue;
-              datalist.appendChild(option);
-            });
-          }
-        });
+        // Asumiendo que en el JSON la propiedad es "descripcion"
+        datosDescripcion = data.descripcion || [];
+        // Aquí podrías cargar datos para los demás campos de forma similar
       })
       .catch(error => console.error('Error al cargar el archivo JSON:', error));
+
+    // Función para filtrar y mostrar sugerencias
+    function mostrarSugerencias(inputElement, suggestionsElement, datos) {
+      const query = inputElement.value.toLowerCase();
+      suggestionsElement.innerHTML = '';
+      const filtrados = datos.filter(item => item.toLowerCase().includes(query));
+      filtrados.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        li.addEventListener('click', () => {
+          inputElement.value = item;
+          suggestionsElement.innerHTML = '';
+        });
+        suggestionsElement.appendChild(li);
+      });
+    }
+
+    // Gestión de autocompletado para "DESCRIPCION"
+    const descripcionInput = document.getElementById('descripcionInput');
+    const descripcionSuggestions = document.getElementById('descripcionSuggestions');
+    descripcionInput.addEventListener('input', function() {
+      mostrarSugerencias(descripcionInput, descripcionSuggestions, datosDescripcion);
+    });
+
+    // Cerrar sugerencias al hacer clic fuera del contenedor
+    document.addEventListener('click', function(e) {
+      if (!document.querySelector('.autocomplete-container').contains(e.target)) {
+        document.querySelectorAll('.suggestions-list').forEach(list => list.innerHTML = '');
+      }
+    });
   </script>
 </body>
 </html>
