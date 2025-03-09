@@ -8,7 +8,7 @@
   <!-- Preload y estilos -->
   <link rel="preload" href="normalize.css" as="style">
   <link rel="stylesheet" href="normalize.css">
-
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto&display=swap" rel="stylesheet">
@@ -45,12 +45,14 @@
     <section>
       <!-- Formulario -->
       <form id="miFormulario" class="formulario">
-        <div class="encabezado">
-          <h2>Formulario de solicitudes</h2>
+        <!-- Encabezado del formulario con ícono y color destacado -->
+        <div class="form-header">
+          <span class="header-icon">📝</span>
+          <h2>Formulario de Solicitudes</h2>
         </div>
 
         <div class="contenedor-campos">
-          <!-- DESCRIPCION (autocompletable) -->
+          <!-- DESCRIPCION (autocompletable con validación) -->
           <div class="campo">
             <label>DESCRIPCION</label>
             <div class="autocomplete-container">
@@ -59,7 +61,7 @@
             </div>
           </div>
 
-          <!-- UND DE MEDIDA (autocompletable) -->
+          <!-- UND DE MEDIDA (autocompletable con validación) -->
           <div class="campo">
             <label>UND DE MEDIDA</label>
             <div class="autocomplete-container">
@@ -74,7 +76,7 @@
             <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
-          <!-- TIPO DE PEDIDO (autocompletable) -->
+          <!-- TIPO DE PEDIDO (autocompletable con validación) -->
           <div class="campo">
             <label>TIPO DE PEDIDO</label>
             <div class="autocomplete-container">
@@ -95,7 +97,7 @@
             <input name="detalle_ubicacion_maquina" class="input-text" type="text" placeholder="Ingresa el detalle de la ubicación" required>
           </div>
 
-          <!-- MAQUINA (autocompletable) -->
+          <!-- MAQUINA (autocompletable con validación) -->
           <div class="campo">
             <label>MAQUINA</label>
             <div class="autocomplete-container">
@@ -104,7 +106,7 @@
             </div>
           </div>
 
-          <!-- SOLICITANTE (autocompletable) -->
+          <!-- SOLICITANTE (autocompletable con validación) -->
           <div class="campo">
             <label>SOLICITANTE</label>
             <div class="autocomplete-container">
@@ -136,25 +138,136 @@
   </footer>
 
   <!-- Scripts -->
-  <!-- Script para enviar datos a Google Sheets mediante Google Apps Script -->
   <script>
+    // Variables para almacenar datos de cada campo (se cargarán desde el archivo JSON)
+    let datosDescripcion = [];
+    let datosUndDeMedida = [];
+    let datosTipoDePedido = [];
+    let datosMaquina = [];
+    let datosSolicitante = [];
+
+    // Cargar datos desde opciones.json
+    fetch('opciones.json')
+      .then(response => response.json())
+      .then(data => {
+        datosDescripcion = data.descripcion || [];
+        datosUndDeMedida = data.und_de_medida || [];
+        datosTipoDePedido = data.tipo_de_pedido || [];
+        datosMaquina = data.maquina || [];
+        datosSolicitante = data.solicitante || [];
+      })
+      .catch(error => console.error('Error al cargar el archivo JSON:', error));
+
+    // Función para filtrar y mostrar sugerencias
+    function mostrarSugerencias(inputElement, suggestionsElement, datos) {
+      const query = inputElement.value.toLowerCase();
+      suggestionsElement.innerHTML = '';
+      const filtrados = datos.filter(item => item.toLowerCase().includes(query));
+      filtrados.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        li.addEventListener('click', () => {
+          inputElement.value = item;
+          suggestionsElement.innerHTML = '';
+        });
+        suggestionsElement.appendChild(li);
+      });
+    }
+
+    // Asignar eventos de autocompletado para cada campo
+    const descripcionInput = document.getElementById('descripcionInput');
+    const descripcionSuggestions = document.getElementById('descripcionSuggestions');
+    descripcionInput.addEventListener('input', function() {
+      mostrarSugerencias(descripcionInput, descripcionSuggestions, datosDescripcion);
+    });
+
+    const undDeMedidaInput = document.getElementById('und_de_medidaInput');
+    const undDeMedidaSuggestions = document.getElementById('und_de_medidaSuggestions');
+    undDeMedidaInput.addEventListener('input', function() {
+      mostrarSugerencias(undDeMedidaInput, undDeMedidaSuggestions, datosUndDeMedida);
+    });
+
+    const tipoDePedidoInput = document.getElementById('tipo_de_pedidoInput');
+    const tipoDePedidoSuggestions = document.getElementById('tipo_de_pedidoSuggestions');
+    tipoDePedidoInput.addEventListener('input', function() {
+      mostrarSugerencias(tipoDePedidoInput, tipoDePedidoSuggestions, datosTipoDePedido);
+    });
+
+    const maquinaInput = document.getElementById('maquinaInput');
+    const maquinaSuggestions = document.getElementById('maquinaSuggestions');
+    maquinaInput.addEventListener('input', function() {
+      mostrarSugerencias(maquinaInput, maquinaSuggestions, datosMaquina);
+    });
+
+    const solicitanteInput = document.getElementById('solicitanteInput');
+    const solicitanteSuggestions = document.getElementById('solicitanteSuggestions');
+    solicitanteInput.addEventListener('input', function() {
+      mostrarSugerencias(solicitanteInput, solicitanteSuggestions, datosSolicitante);
+    });
+
+    // Cerrar sugerencias al hacer clic fuera del contenedor
+    document.addEventListener('click', function(e) {
+      document.querySelectorAll('.autocomplete-container').forEach(container => {
+        if (!container.contains(e.target)) {
+          container.querySelectorAll('.suggestions-list').forEach(list => list.innerHTML = '');
+        }
+      });
+    });
+
+    // Validar que el valor ingresado sea de la lista antes de enviar
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
-      e.preventDefault();
+      // Validar DESCRIPCION
+      if (!datosDescripcion.includes(descripcionInput.value)) {
+        e.preventDefault();
+        alert('Por favor, selecciona un valor válido para DESCRIPCION.');
+        descripcionInput.focus();
+        return;
+      }
+      // Validar UND DE MEDIDA
+      if (!datosUndDeMedida.includes(undDeMedidaInput.value)) {
+        e.preventDefault();
+        alert('Por favor, selecciona un valor válido para UND DE MEDIDA.');
+        undDeMedidaInput.focus();
+        return;
+      }
+      // Validar TIPO DE PEDIDO
+      if (!datosTipoDePedido.includes(tipoDePedidoInput.value)) {
+        e.preventDefault();
+        alert('Por favor, selecciona un valor válido para TIPO DE PEDIDO.');
+        tipoDePedidoInput.focus();
+        return;
+      }
+      // Validar MAQUINA
+      if (!datosMaquina.includes(maquinaInput.value)) {
+        e.preventDefault();
+        alert('Por favor, selecciona un valor válido para MAQUINA.');
+        maquinaInput.focus();
+        return;
+      }
+      // Validar SOLICITANTE
+      if (!datosSolicitante.includes(solicitanteInput.value)) {
+        e.preventDefault();
+        alert('Por favor, selecciona un valor válido para SOLICITANTE.');
+        solicitanteInput.focus();
+        return;
+      }
+
+      // Mostrar spinner y enviar datos a Google Sheets
       var form = this;
       var spinner = document.getElementById('spinner');
       var confirmationMessage = document.getElementById('confirmationMessage');
       spinner.style.display = 'block';
       confirmationMessage.style.display = 'none';
-      
+
       var data = {
-        descripcion: form.querySelector('input[name="descripcion"]').value,
-        und_de_medida: form.querySelector('input[name="und_de_medida"]').value,
+        descripcion: descripcionInput.value,
+        und_de_medida: undDeMedidaInput.value,
         cantidad: form.querySelector('input[name="cantidad"]').value,
-        tipo_de_pedido: form.querySelector('input[name="tipo_de_pedido"]').value,
+        tipo_de_pedido: tipoDePedidoInput.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
-        maquina: form.querySelector('input[name="maquina"]').value,
-        solicitante: form.querySelector('input[name="solicitante"]').value
+        maquina: maquinaInput.value,
+        solicitante: solicitanteInput.value
       };
 
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwKnAzxJtVAkx7tED6OcFXWXfFQMFr7hpvW5uCd4jI6npEfkXo4fD2Rb4Gjiir55Xoc/exec';
@@ -177,52 +290,6 @@
         confirmationMessage.style.display = 'block';
         console.error('Error!', error.message);
       });
-    });
-  </script>
-  
-  <!-- Script para cargar opciones desde el JSON y gestionar el autocompletado personalizado (ejemplo para DESCRIPCION) -->
-  <script>
-    // Variable para almacenar datos del campo "DESCRIPCION"
-    let datosDescripcion = []; // Se cargarán desde el archivo JSON
-
-    // Cargar datos desde opciones.json
-    fetch('opciones.json')
-      .then(response => response.json())
-      .then(data => {
-        // Asumiendo que en el JSON la propiedad es "descripcion"
-        datosDescripcion = data.descripcion || [];
-        // Aquí podrías cargar datos para los demás campos de forma similar
-      })
-      .catch(error => console.error('Error al cargar el archivo JSON:', error));
-
-    // Función para filtrar y mostrar sugerencias
-    function mostrarSugerencias(inputElement, suggestionsElement, datos) {
-      const query = inputElement.value.toLowerCase();
-      suggestionsElement.innerHTML = '';
-      const filtrados = datos.filter(item => item.toLowerCase().includes(query));
-      filtrados.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        li.addEventListener('click', () => {
-          inputElement.value = item;
-          suggestionsElement.innerHTML = '';
-        });
-        suggestionsElement.appendChild(li);
-      });
-    }
-
-    // Gestión de autocompletado para "DESCRIPCION"
-    const descripcionInput = document.getElementById('descripcionInput');
-    const descripcionSuggestions = document.getElementById('descripcionSuggestions');
-    descripcionInput.addEventListener('input', function() {
-      mostrarSugerencias(descripcionInput, descripcionSuggestions, datosDescripcion);
-    });
-
-    // Cerrar sugerencias al hacer clic fuera del contenedor
-    document.addEventListener('click', function(e) {
-      if (!document.querySelector('.autocomplete-container').contains(e.target)) {
-        document.querySelectorAll('.suggestions-list').forEach(list => list.innerHTML = '');
-      }
     });
   </script>
 </body>
