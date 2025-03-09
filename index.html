@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulario para inspecciones</title>
+  <title>Formulario para Solicitudes</title>
 
   <link rel="preload" href="normalize.css" as="style">
   <link rel="stylesheet" href="normalize.css">
@@ -17,6 +17,7 @@
 
   <link rel="preload" href="style1.css" as="style">
   <link rel="stylesheet" href="style1.css">
+  
 </head>
 <body>
   <header class="header">
@@ -25,11 +26,10 @@
         <svg width="131" height="44" viewBox="0 0 131 44" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Aquí van los paths de tu logo -->
         </svg>
-      </a>    
+      </a>
     </div>
-
     <div class="header__icono">
-      <a href="index.html"> 
+      <a href="index.html">
         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="40" height="40" viewBox="0 0 24 24" stroke-width="2" stroke="#005286" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
           <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
@@ -45,62 +45,102 @@
       <!-- Formulario -->
       <form id="miFormulario" class="formulario">
         <div class="encabezado">
-
-          <h2>*Porfavor de manera conciente, Observa y analiza el estado de las unidades, Sistemas y/o componentes, con el fin de encontrar algun daño, que podria generar fallas funcionales.</h2>
-          <h2>*Si la tarea es inspeccionar o verificar entonces podras excribir un texto largo de lo contrario solo puedes ingresar numeros</h2>
+          <h2>*Por favor, completa el formulario con la información del repuesto e inspección.</h2>
         </div>
 
         <div class="contenedor-campos">
+          <!-- DESCRIPCION (autocompletable) -->
           <div class="campo">
-            <label>COCHE ALIMENTADOR 01 | GENERAL | <b>GENERAL</b></label>
-            <input name="coche_alimentador_01" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>DESCRIPCION</label>
+            <input list="descripcionList" name="descripcion" class="input-text" placeholder="Selecciona o escribe la descripción" required>
+            <datalist id="descripcionList">
+              <option value="Repuesto A">
+              <option value="Repuesto B">
+              <option value="Repuesto C">
+              <!-- Agrega más opciones según necesites -->
+            </datalist>
           </div>
 
+          <!-- UND DE MEDIDA -->
           <div class="campo">
-            <label>COCHE ALIMENTADOR 02 | GENERAL | <b>GENERAL</b></label>
-            <input name="coche_alimentador_02" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>UND DE MEDIDA</label>
+            <select name="und_de_medida" class="input-text" required>
+              <option value="" disabled selected>Selecciona la unidad</option>
+              <option value="Und">Und</option>
+              <option value="Metro">Metro</option>
+            </select>
           </div>
 
+          <!-- CANTIDAD -->
           <div class="campo">
-            <label>COCHE ALIMENTADOR 03 | GENERAL | <b>GENERAL</b></label>
-            <input name="coche_alimentador_03" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>CANTIDAD</label>
+            <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
+          <!-- TIPO DE PEDIDO -->
           <div class="campo">
-            <label>SILO 01 | GENERAL | <b>GENERAL</b></label>
-            <input name="silo_01" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>TIPO DE PEDIDO</label>
+            <select name="tipo_de_pedido" class="input-text" required>
+              <option value="" disabled selected>Selecciona el tipo de pedido</option>
+              <option value="Emergencia">Emergencia</option>
+              <option value="Normal">Normal</option>
+            </select>
           </div>
 
+          <!-- OT -->
           <div class="campo">
-            <label>SILO 02 | GENERAL | <b>GENERAL</b></label>
-            <input name="silo_02" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>OT</label>
+            <input name="ot" class="input-text" type="text" placeholder="Ingresa la OT" required>
           </div>
 
+          <!-- DETALLE UBICACION EN MAQUINA -->
           <div class="campo">
-            <label>SILO 03 | GENERAL | <b>GENERAL</b></label>
-            <input name="silo_03" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>DETALLE UBICACION EN MAQUINA</label>
+            <input name="detalle_ubicacion_maquina" class="input-text" type="text" placeholder="Ingresa el detalle de la ubicación" required>
           </div>
 
+          <!-- MAQUINA (autocompletable) -->
           <div class="campo">
-            <label>DEGA 01 | GENERAL | <b>GENERAL</b></label>
-            <input name="dega_01" class="input-text" type="text" placeholder="Inspeccionar">
+            <label>MAQUINA</label>
+            <input list="maquinaList" name="maquina" class="input-text" placeholder="Selecciona o escribe la máquina" required>
+            <datalist id="maquinaList">
+              <option value="MAQUINA 1">
+              <option value="MAQUINA 2">
+              <!-- Agrega más opciones si es necesario -->
+            </datalist>
           </div>
 
+          <!-- SOLICITANTE (autocompletable) -->
           <div class="campo">
-            <label>Observaciones</label>
-            <textarea name="observaciones" class="input-text"></textarea>
+            <label>SOLICITANTE</label>
+            <input list="solicitanteList" name="solicitante" class="input-text" placeholder="Selecciona o escribe el solicitante" required>
+            <datalist id="solicitanteList">
+              <option value="SOLICITANTE 1">
+              <option value="SOLICITANTE 2">
+              <!-- Agrega más opciones según necesites -->
+            </datalist>
           </div>
         </div>
 
         <div class="alinear-derecha flex">
           <input class="boton wm-sm-100" type="submit" value="Enviar">
         </div>
+
+        <!-- Spinner para indicar espera durante el envío -->
+        <div id="spinner" style="display: none; text-align: center; margin-top: 10px;">
+          <svg class="spinner" viewBox="0 0 50 50">
+            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+          </svg>
+        </div>
+
+        <!-- Mensaje de confirmación de envío -->
+        <div id="confirmationMessage" style="display: none;"></div>
       </form>
     </section>
   </main>
 
   <footer>
-    Porfavor si tiene incovenientes comunicarse con ********
+    Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
   <!-- Script para enviar datos a Google Sheets mediante Google Apps Script -->
@@ -108,15 +148,21 @@
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
       e.preventDefault();
       var form = this;
+      // Mostrar spinner y ocultar mensaje de confirmación
+      var spinner = document.getElementById('spinner');
+      var confirmationMessage = document.getElementById('confirmationMessage');
+      spinner.style.display = 'block';
+      confirmationMessage.style.display = 'none';
+      
       var data = {
-        coche_alimentador_01: form.querySelector('input[name="coche_alimentador_01"]').value,
-        coche_alimentador_02: form.querySelector('input[name="coche_alimentador_02"]').value,
-        coche_alimentador_03: form.querySelector('input[name="coche_alimentador_03"]').value,
-        silo_01: form.querySelector('input[name="silo_01"]').value,
-        silo_02: form.querySelector('input[name="silo_02"]').value,
-        silo_03: form.querySelector('input[name="silo_03"]').value,
-        dega_01: form.querySelector('input[name="dega_01"]').value,
-        observaciones: form.querySelector('textarea[name="observaciones"]').value
+        descripcion: form.querySelector('input[name="descripcion"]').value,
+        und_de_medida: form.querySelector('[name="und_de_medida"]').value,
+        cantidad: form.querySelector('input[name="cantidad"]').value,
+        tipo_de_pedido: form.querySelector('[name="tipo_de_pedido"]').value,
+        ot: form.querySelector('input[name="ot"]').value,
+        detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
+        maquina: form.querySelector('input[name="maquina"]').value,
+        solicitante: form.querySelector('input[name="solicitante"]').value
       };
 
       // URL del Google Apps Script
@@ -129,11 +175,16 @@
         body: JSON.stringify(data)
       })
       .then(response => {
-        alert('Datos enviados correctamente');
+        // Ocultar spinner y mostrar mensaje de confirmación
+        spinner.style.display = 'none';
+        confirmationMessage.textContent = '¡Formulario enviado con éxito! Gracias por tu colaboración.';
+        confirmationMessage.style.display = 'block';
         form.reset();
       })
       .catch(error => {
-        alert('Error al enviar datos');
+        spinner.style.display = 'none';
+        confirmationMessage.textContent = 'Error al enviar datos, por favor intenta de nuevo.';
+        confirmationMessage.style.display = 'block';
         console.error('Error!', error.message);
       });
     });
