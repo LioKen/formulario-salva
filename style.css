@@ -1,0 +1,174 @@
+:root {
+    --primario:  #584ee0;
+    --secundario: rgb(238, 238, 234);
+    --blanco: #fff;
+    --negro: #000;
+
+    --fuentePrincipal: 'Bebas Neue', sans-serif;
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+}
+
+/*  *, *:before, *:after {
+    box-sizing: inherit;
+} */
+
+/*globales*/
+
+body {
+    margin-top: 9rem;
+    font-size: 1.6rem;
+    line-height: 1.5;
+
+}
+
+p {
+    font-size: 1.8rem;
+    font-family:Arial, Helvetica, sans-serif;
+    color: var(--blanco);
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: var(--negro);
+    text-transform: uppercase;
+}
+
+h1 {
+    font-size: 4rem;
+}
+
+h2 {
+    font-size: 3.2rem;
+}
+
+h3 {
+    font-size: 2.4rem;
+}
+
+/*header*/
+.header{
+  background-color: #f5f7f6;
+    display: flex;
+    justify-content: space-between;
+    height: 7rem;
+    width: 100%;
+    left: 0;
+    top: 0;
+    position: fixed;
+  }
+    
+.header__icono {
+    padding-top: 0.8rem;
+}
+
+.header__titulo{
+    width: 100%;
+    padding-top: 0rem;
+}
+
+.header__titulo--texto{
+    font-size: 2.2rem;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .header{
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-rows: 3rem auto;
+        justify-items: center;
+        
+    }
+}
+
+@media (max-width: 768px) {
+    .header__titulo {
+    grid-row: 2 / 3;
+    grid-column: 1 / 3;
+    
+    
+    }
+}
+
+@media (max-width: 768px) {
+  .header__titulo--texto {
+    font-size: 1.7rem;
+  
+  }
+}
+
+
+ 
+/*footer*/
+.footer {
+    background-color: var(--primarioOscuro);
+}
+
+.footer__texto{
+    color: var(--negro);
+    text-align: left ;
+    font-size: 2.2rem;
+}
+
+/* boton */
+.boton {
+    position: relative;
+    display: block;
+    background: transparent;
+    width: 300px;
+    height: 80px;
+    line-height: 80px;
+    text-align: center;
+    font-size: 15px;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #584ee0;
+    margin: 40px auto;
+    font-family: Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
+    font-weight: bold;
+  }
+  .boton:before,
+  .boton:after {
+    position: absolute;
+    content: '';
+    width: 300px;
+    left: 0px;
+    height: 34px;
+    z-index: -1;
+  }
+  
+  .boton:before {
+    transform: perspective(15px) rotateX(3deg);
+  }
+  .boton:after {
+    top: 40px;
+    transform: perspective(15px) rotateX(-3deg);
+  }
+  
+  /* Button Border Style */
+  
+  .boton.borde:before,
+  .boton.borde:after {
+    border: 4px solid #6213bd;
+  }
+  .boton.borde:before {
+    border-bottom: none; /* to prevent the border-line showing up in the middle of the shape */
+  }
+  .boton.borde:after {
+    border-top: none; /* to prevent the border-line showing up in the middle of the shape */
+  }
+  
+  /* Button hover styles */
+  
+  .boton.borde:hover:before,
+  .boton.borde:hover:after {
+    background: #afadd8;
+  }
+  .boton.borde:hover {
+    color: #fff;
+  }
