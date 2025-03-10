@@ -44,7 +44,8 @@ h2 {
 
 /* Header principal */
 header.header {
-    background-color: var(--fondo);
+    background-color: var(--primario); /* Se usa el color primario para un look profesional */
+    color: var(--blanco);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -55,6 +56,12 @@ header.header {
     left: 0;
     padding: 0 2rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Enlaces en el header */
+header.header a {
+    color: var(--blanco);
+    text-decoration: none;
 }
 
 .header__icono {
@@ -172,6 +179,29 @@ select.input-text {
 
 .boton:hover {
     background-color: var(--secundario);
+}
+
+/* Estilos para el botón de agregar descripción */
+.add-btn {
+    background-color: var(--primario);
+    color: var(--blanco);
+    border: none;
+    padding: 0.8rem 1.6rem;
+    font-size: 1.6rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 0.5rem;
+    align-self: flex-start;
+}
+
+.add-btn:hover {
+    background-color: var(--secundario);
+}
+
+/* Separación entre entradas de descripción */
+.descripcion-item {
+    margin-bottom: 1rem;
 }
 
 /* Spinner de carga */
