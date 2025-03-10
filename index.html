@@ -51,7 +51,7 @@
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         
         <div class="contenedor-campos">
-          <!-- CAMPO DESCRIPCION y CANTIDAD por fila -->
+          <!-- CAMPO DESCRIPCION, CANTIDAD y UNIDAD DE MEDIDA por fila -->
           <div class="campo">
             <label>DESCRIPCION</label>
             <div id="descripcion-container">
@@ -60,18 +60,14 @@
                 <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Descripción" autocomplete="off" required>
                 <!-- Input para la cantidad asociada -->
                 <input type="number" name="cantidad[]" class="input-text cantidad-input" placeholder="Cantidad" min="0" required>
+                <!-- Select para la unidad de medida -->
+                <select name="und_de_medida[]" class="input-text" required>
+                  <option value="">Selecciona la unidad</option>
+                </select>
                 <ul class="suggestions-list"></ul>
               </div>
             </div>
-            <button type="button" id="addDescripcion" class="add-btn">+ Agregar descripción</button>
-          </div>
-
-          <!-- UND DE MEDIDA -->
-          <div class="campo">
-            <label>UND DE MEDIDA</label>
-            <select id="und_de_medidaSelect" name="und_de_medida" class="input-text" required>
-              <option value="">Selecciona la unidad</option>
-            </select>
+            <button type="button" id="addDescripcion" class="add-btn">+ Agregar</button>
           </div>
 
           <!-- TIPO DE PEDIDO -->
@@ -142,7 +138,7 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Scripts para autocompletado, validación y manejo de múltiples filas (descripción + cantidad) -->
+  <!-- Scripts para autocompletado, validación y manejo de múltiples filas (descripción, cantidad y unidad) -->
   <script>
     // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
@@ -161,15 +157,31 @@
         datosMaquina = data.maquina || [];
         datosSolicitante = data.solicitante || [];
 
-        // Poblar los dropdowns
-        populateSelect('und_de_medidaSelect', datosUndDeMedida);
+        // Poblar el select de "TIPO DE PEDIDO"
         populateSelect('tipo_de_pedidoSelect', datosTipoDePedido);
+
+        // Poblar el select de unidad de medida del primer input de descripción
+        const firstUmSelect = document.querySelector('#descripcion-container select[name="und_de_medida[]"]');
+        if (firstUmSelect) {
+          populateUnidadSelect(firstUmSelect, datosUndDeMedida);
+        }
       })
       .catch(error => console.error('Error al cargar el archivo JSON:', error));
 
-    // Función para poblar un elemento select
+    // Función para poblar un elemento select dado su id (para TIPO DE PEDIDO)
     function populateSelect(selectId, optionsArray) {
       const selectElement = document.getElementById(selectId);
+      optionsArray.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        selectElement.appendChild(option);
+      });
+    }
+
+    // Función para poblar un select de unidad de medida dado un elemento select
+    function populateUnidadSelect(selectElement, optionsArray) {
+      selectElement.innerHTML = '<option value="">Selecciona la unidad</option>';
       optionsArray.forEach(optionValue => {
         const option = document.createElement('option');
         option.value = optionValue;
@@ -208,12 +220,13 @@
       setupAutocompleteForDescripcion(input);
     });
 
-    // Agregar nuevas filas (descripción + cantidad) al hacer clic en el botón
+    // Agregar nuevas filas (descripción, cantidad y unidad) al hacer clic en el botón
     document.getElementById('addDescripcion').addEventListener('click', function(e) {
       const container = document.getElementById('descripcion-container');
       const newDiv = document.createElement('div');
       newDiv.className = 'descripcion-item autocomplete-container';
 
+      // Nuevo input para descripción
       const newDescInput = document.createElement('input');
       newDescInput.type = 'text';
       newDescInput.name = 'descripcion[]';
@@ -222,6 +235,7 @@
       newDescInput.setAttribute('autocomplete', 'off');
       newDescInput.required = true;
 
+      // Nuevo input para cantidad
       const newQtyInput = document.createElement('input');
       newQtyInput.type = 'number';
       newQtyInput.name = 'cantidad[]';
@@ -230,11 +244,26 @@
       newQtyInput.min = '0';
       newQtyInput.required = true;
 
+      // Nuevo select para unidad de medida
+      const newUmSelect = document.createElement('select');
+      newUmSelect.name = 'und_de_medida[]';
+      newUmSelect.className = 'input-text';
+      newUmSelect.required = true;
+      newUmSelect.innerHTML = '<option value="">Selecciona la unidad</option>';
+      // Poblar el select con las opciones
+      datosUndDeMedida.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        newUmSelect.appendChild(option);
+      });
+
       const newUl = document.createElement('ul');
       newUl.className = 'suggestions-list';
 
       newDiv.appendChild(newDescInput);
       newDiv.appendChild(newQtyInput);
+      newDiv.appendChild(newUmSelect);
       newDiv.appendChild(newUl);
       container.appendChild(newDiv);
 
@@ -284,9 +313,12 @@
       const items = document.querySelectorAll('.descripcion-item');
       let descripcionArray = [];
       let cantidadArray = [];
+      let undArray = [];
       for (let i = 0; i < items.length; i++) {
         const descInput = items[i].querySelector('input[name="descripcion[]"]');
         const qtyInput = items[i].querySelector('input[name="cantidad[]"]');
+        const umSelect = items[i].querySelector('select[name="und_de_medida[]"]');
+
         if (!datosDescripcion.includes(descInput.value)) {
           showError('Por favor, selecciona un valor válido para DESCRIPCION.');
           descInput.focus();
@@ -297,16 +329,16 @@
           qtyInput.focus();
           return;
         }
+        if (umSelect.value === "") {
+          showError('Por favor, selecciona una unidad de medida.');
+          umSelect.focus();
+          return;
+        }
         descripcionArray.push(descInput.value.trim());
         cantidadArray.push(qtyInput.value.trim());
+        undArray.push(umSelect.value);
       }
 
-      const undSelect = document.getElementById('und_de_medidaSelect');
-      if (undSelect.value === "") {
-        showError('Por favor, selecciona una unidad de medida.');
-        undSelect.focus();
-        return;
-      }
       const tipoSelect = document.getElementById('tipo_de_pedidoSelect');
       if (tipoSelect.value === "") {
         showError('Por favor, selecciona un tipo de pedido.');
@@ -316,9 +348,9 @@
 
       const form = this;
       const data = {
-        descripcion: descripcionArray,  // Array de descripciones
-        cantidad: cantidadArray,          // Array de cantidades correspondientes
-        und_de_medida: undSelect.value,
+        descripcion: descripcionArray,
+        cantidad: cantidadArray,
+        und_de_medida: undArray,
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
@@ -357,7 +389,3 @@
   </script>
 </body>
 </html>
-
-
-
-
