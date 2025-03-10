@@ -51,12 +51,15 @@
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         
         <div class="contenedor-campos">
-          <!-- CAMPO DESCRIPCION con autocompletar múltiple -->
+          <!-- CAMPO DESCRIPCION y CANTIDAD por fila -->
           <div class="campo">
             <label>DESCRIPCION</label>
             <div id="descripcion-container">
               <div class="descripcion-item autocomplete-container">
-                <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Selecciona o escribe la descripción" autocomplete="off" required>
+                <!-- Input para la descripción -->
+                <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Descripción" autocomplete="off" required>
+                <!-- Input para la cantidad asociada -->
+                <input type="number" name="cantidad[]" class="input-text cantidad-input" placeholder="Cantidad" min="0" required>
                 <ul class="suggestions-list"></ul>
               </div>
             </div>
@@ -69,12 +72,6 @@
             <select id="und_de_medidaSelect" name="und_de_medida" class="input-text" required>
               <option value="">Selecciona la unidad</option>
             </select>
-          </div>
-
-          <!-- CANTIDAD -->
-          <div class="campo">
-            <label>CANTIDAD</label>
-            <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
           <!-- TIPO DE PEDIDO -->
@@ -145,7 +142,7 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Scripts para autocompletado, validación y manejo de múltiples descripciones -->
+  <!-- Scripts para autocompletado, validación y manejo de múltiples filas (descripción + cantidad) -->
   <script>
     // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
@@ -211,29 +208,38 @@
       setupAutocompleteForDescripcion(input);
     });
 
-    // Agregar nuevas entradas de descripción al hacer clic en el botón
+    // Agregar nuevas filas (descripción + cantidad) al hacer clic en el botón
     document.getElementById('addDescripcion').addEventListener('click', function(e) {
-      var container = document.getElementById('descripcion-container');
-      var newDiv = document.createElement('div');
+      const container = document.getElementById('descripcion-container');
+      const newDiv = document.createElement('div');
       newDiv.className = 'descripcion-item autocomplete-container';
 
-      var newInput = document.createElement('input');
-      newInput.type = 'text';
-      newInput.name = 'descripcion[]';
-      newInput.className = 'input-text descripcion-input';
-      newInput.placeholder = 'Selecciona o escribe la descripción';
-      newInput.setAttribute('autocomplete', 'off');
-      newInput.required = true;
+      const newDescInput = document.createElement('input');
+      newDescInput.type = 'text';
+      newDescInput.name = 'descripcion[]';
+      newDescInput.className = 'input-text descripcion-input';
+      newDescInput.placeholder = 'Descripción';
+      newDescInput.setAttribute('autocomplete', 'off');
+      newDescInput.required = true;
 
-      var newUl = document.createElement('ul');
+      const newQtyInput = document.createElement('input');
+      newQtyInput.type = 'number';
+      newQtyInput.name = 'cantidad[]';
+      newQtyInput.className = 'input-text cantidad-input';
+      newQtyInput.placeholder = 'Cantidad';
+      newQtyInput.min = '0';
+      newQtyInput.required = true;
+
+      const newUl = document.createElement('ul');
       newUl.className = 'suggestions-list';
 
-      newDiv.appendChild(newInput);
+      newDiv.appendChild(newDescInput);
+      newDiv.appendChild(newQtyInput);
       newDiv.appendChild(newUl);
       container.appendChild(newDiv);
 
-      // Configurar autocompletado para el nuevo input
-      setupAutocompleteForDescripcion(newInput);
+      // Configurar autocompletado para el nuevo input de descripción
+      setupAutocompleteForDescripcion(newDescInput);
     });
 
     // Configurar autocompletado para MAQUINA y SOLICITANTE
@@ -275,29 +281,26 @@
       e.preventDefault();
       clearError();
 
-      // Validar cada campo de DESCRIPCION
-      var allDescripcionInputs = document.querySelectorAll('input[name="descripcion[]"]');
-      for (let i = 0; i < allDescripcionInputs.length; i++) {
-        if (!datosDescripcion.includes(allDescripcionInputs[i].value)) {
+      const items = document.querySelectorAll('.descripcion-item');
+      let descripcionArray = [];
+      let cantidadArray = [];
+      for (let i = 0; i < items.length; i++) {
+        const descInput = items[i].querySelector('input[name="descripcion[]"]');
+        const qtyInput = items[i].querySelector('input[name="cantidad[]"]');
+        if (!datosDescripcion.includes(descInput.value)) {
           showError('Por favor, selecciona un valor válido para DESCRIPCION.');
-          allDescripcionInputs[i].focus();
+          descInput.focus();
           return;
         }
+        if (qtyInput.value.trim() === "") {
+          showError('Por favor, ingresa una cantidad válida.');
+          qtyInput.focus();
+          return;
+        }
+        descripcionArray.push(descInput.value.trim());
+        cantidadArray.push(qtyInput.value.trim());
       }
-      
-      // Validar MAQUINA y SOLICITANTE
-      if (!datosMaquina.includes(maquinaInput.value)) {
-        showError('Por favor, selecciona un valor válido para MAQUINA.');
-        maquinaInput.focus();
-        return;
-      }
-      if (!datosSolicitante.includes(solicitanteInput.value)) {
-        showError('Por favor, selecciona un valor válido para SOLICITANTE.');
-        solicitanteInput.focus();
-        return;
-      }
-      
-      // Validar dropdowns
+
       const undSelect = document.getElementById('und_de_medidaSelect');
       if (undSelect.value === "") {
         showError('Por favor, selecciona una unidad de medida.');
@@ -310,21 +313,12 @@
         tipoSelect.focus();
         return;
       }
-      
-      // Recopilar valores de las descripciones
-      let descripcionValues = [];
-      allDescripcionInputs.forEach(function(input) {
-        if (input.value.trim() !== '') {
-          descripcionValues.push(input.value.trim());
-        }
-      });
 
-      // Preparar datos para enviar (incluye "jefe_responsable")
       const form = this;
       const data = {
-        descripcion: descripcionValues,
+        descripcion: descripcionArray,  // Array de descripciones
+        cantidad: cantidadArray,          // Array de cantidades correspondientes
         und_de_medida: undSelect.value,
-        cantidad: form.querySelector('input[name="cantidad"]').value,
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
@@ -363,6 +357,7 @@
   </script>
 </body>
 </html>
+
 
 
 
