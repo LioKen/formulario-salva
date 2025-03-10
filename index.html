@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Formulario de Solicitudes</title>
 
-  <!-- Preload y estilos -->
+  <!-- Preload y enlaces a hojas de estilo externas -->
   <link rel="preload" href="normalize.css" as="style">
   <link rel="stylesheet" href="normalize.css">
   
@@ -42,25 +42,28 @@
   <main>
     <section>
       <form id="miFormulario" class="formulario">
-        <!-- Encabezado con ícono y color destacado -->
+        <!-- Encabezado -->
         <div class="form-header">
           <span class="header-icon">📝</span>
           <h2>Formulario de Solicitudes</h2>
         </div>
-        <!-- Contenedor para mostrar mensajes de error personalizados -->
+        <!-- Mensaje de error -->
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         
         <div class="contenedor-campos">
-          <!-- DESCRIPCION (autocompletable con validación) -->
+          <!-- CAMPO DESCRIPCION con autocompletar múltiple -->
           <div class="campo">
             <label>DESCRIPCION</label>
-            <div class="autocomplete-container">
-              <input type="text" id="descripcionInput" name="descripcion" class="input-text" placeholder="Selecciona o escribe la descripción" autocomplete="off" required>
-              <ul id="descripcionSuggestions" class="suggestions-list"></ul>
+            <div id="descripcion-container">
+              <div class="descripcion-item autocomplete-container">
+                <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Selecciona o escribe la descripción" autocomplete="off" required>
+                <ul class="suggestions-list"></ul>
+              </div>
             </div>
+            <button type="button" id="addDescripcion" class="add-btn">+ Agregar descripción</button>
           </div>
 
-          <!-- UND DE MEDIDA (dropdown select) -->
+          <!-- UND DE MEDIDA -->
           <div class="campo">
             <label>UND DE MEDIDA</label>
             <select id="und_de_medidaSelect" name="und_de_medida" class="input-text" required>
@@ -74,7 +77,7 @@
             <input name="cantidad" class="input-text" type="number" min="0" placeholder="Ingresa la cantidad" required>
           </div>
 
-          <!-- TIPO DE PEDIDO (dropdown select) -->
+          <!-- TIPO DE PEDIDO -->
           <div class="campo">
             <label>TIPO DE PEDIDO</label>
             <select id="tipo_de_pedidoSelect" name="tipo_de_pedido" class="input-text" required>
@@ -94,7 +97,7 @@
             <input name="detalle_ubicacion_maquina" class="input-text" type="text" placeholder="Ingresa el detalle de la ubicación" required>
           </div>
 
-          <!-- MAQUINA (autocompletable con validación) -->
+          <!-- MAQUINA -->
           <div class="campo">
             <label>MAQUINA</label>
             <div class="autocomplete-container">
@@ -103,7 +106,7 @@
             </div>
           </div>
 
-          <!-- SOLICITANTE (autocompletable con validación) -->
+          <!-- SOLICITANTE -->
           <div class="campo">
             <label>SOLICITANTE</label>
             <div class="autocomplete-container">
@@ -111,20 +114,28 @@
               <ul id="solicitanteSuggestions" class="suggestions-list"></ul>
             </div>
           </div>
+
+          <!-- JEFE RESPONSABLE -->
+          <div class="campo">
+            <label>JEFE RESPONSABLE</label>
+            <select name="jefe_responsable" class="input-text" required>
+              <option value="">Selecciona el jefe</option>
+              <option value="ANTONY CARRANZA">ANTONY CARRANZA</option>
+              <option value="PEDRO MATOS">PEDRO MATOS</option>
+            </select>
+          </div>
         </div>
 
         <div class="alinear-derecha flex">
           <input class="boton wm-sm-100" type="submit" value="Enviar">
         </div>
 
-        <!-- Icono giratorio (spinner) mientras se envía el formulario -->
+        <!-- Spinner y mensaje de confirmación -->
         <div id="spinner" style="display: none; text-align: center; margin-top: 10px;">
           <svg class="spinner" viewBox="0 0 50 50">
             <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
           </svg>
         </div>
-
-        <!-- Mensaje de confirmación del envío -->
         <div id="confirmationMessage" style="display: none;"></div>
       </form>
     </section>
@@ -134,7 +145,7 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Script: gestión de autocompletado, carga de datos y validación -->
+  <!-- Scripts para autocompletado, validación y manejo de múltiples descripciones -->
   <script>
     // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
@@ -153,13 +164,13 @@
         datosMaquina = data.maquina || [];
         datosSolicitante = data.solicitante || [];
 
-        // Poblar los dropdowns para UND DE MEDIDA y TIPO DE PEDIDO
+        // Poblar los dropdowns
         populateSelect('und_de_medidaSelect', datosUndDeMedida);
         populateSelect('tipo_de_pedidoSelect', datosTipoDePedido);
       })
       .catch(error => console.error('Error al cargar el archivo JSON:', error));
 
-    // Función para poblar un elemento select con opciones
+    // Función para poblar un elemento select
     function populateSelect(selectId, optionsArray) {
       const selectElement = document.getElementById(selectId);
       optionsArray.forEach(optionValue => {
@@ -170,7 +181,7 @@
       });
     }
 
-    // Función para filtrar y mostrar sugerencias en inputs autocompletable
+    // Función para mostrar sugerencias en inputs autocompletable
     function mostrarSugerencias(inputElement, suggestionsElement, datos) {
       const query = inputElement.value.toLowerCase();
       suggestionsElement.innerHTML = '';
@@ -186,13 +197,46 @@
       });
     }
 
-    // Asignar eventos de autocompletado
-    const descripcionInput = document.getElementById('descripcionInput');
-    const descripcionSuggestions = document.getElementById('descripcionSuggestions');
-    descripcionInput.addEventListener('input', function() {
-      mostrarSugerencias(descripcionInput, descripcionSuggestions, datosDescripcion);
+    // Configurar autocompletado para un input de descripción
+    function setupAutocompleteForDescripcion(input) {
+      const container = input.closest('.autocomplete-container');
+      const suggestionsList = container.querySelector('.suggestions-list');
+      input.addEventListener('input', function() {
+        mostrarSugerencias(input, suggestionsList, datosDescripcion);
+      });
+    }
+
+    // Inicializar autocompletado en el input de descripción inicial
+    document.querySelectorAll('.descripcion-input').forEach(function(input) {
+      setupAutocompleteForDescripcion(input);
     });
 
+    // Agregar nuevas entradas de descripción al hacer clic en el botón
+    document.getElementById('addDescripcion').addEventListener('click', function(e) {
+      var container = document.getElementById('descripcion-container');
+      var newDiv = document.createElement('div');
+      newDiv.className = 'descripcion-item autocomplete-container';
+
+      var newInput = document.createElement('input');
+      newInput.type = 'text';
+      newInput.name = 'descripcion[]';
+      newInput.className = 'input-text descripcion-input';
+      newInput.placeholder = 'Selecciona o escribe la descripción';
+      newInput.setAttribute('autocomplete', 'off');
+      newInput.required = true;
+
+      var newUl = document.createElement('ul');
+      newUl.className = 'suggestions-list';
+
+      newDiv.appendChild(newInput);
+      newDiv.appendChild(newUl);
+      container.appendChild(newDiv);
+
+      // Configurar autocompletado para el nuevo input
+      setupAutocompleteForDescripcion(newInput);
+    });
+
+    // Configurar autocompletado para MAQUINA y SOLICITANTE
     const maquinaInput = document.getElementById('maquinaInput');
     const maquinaSuggestions = document.getElementById('maquinaSuggestions');
     maquinaInput.addEventListener('input', function() {
@@ -226,17 +270,22 @@
       errorDiv.style.display = 'none';
     }
 
-    // Validación personalizada y envío del formulario
+    // Validación y envío del formulario
     document.getElementById('miFormulario').addEventListener('submit', function(e) {
       e.preventDefault();
       clearError();
 
-      // Validar campos autocompletable (DESCRIPCION, MAQUINA, SOLICITANTE)
-      if (!datosDescripcion.includes(descripcionInput.value)) {
-        showError('Por favor, selecciona un valor válido para DESCRIPCION.');
-        descripcionInput.focus();
-        return;
+      // Validar cada campo de DESCRIPCION
+      var allDescripcionInputs = document.querySelectorAll('input[name="descripcion[]"]');
+      for (let i = 0; i < allDescripcionInputs.length; i++) {
+        if (!datosDescripcion.includes(allDescripcionInputs[i].value)) {
+          showError('Por favor, selecciona un valor válido para DESCRIPCION.');
+          allDescripcionInputs[i].focus();
+          return;
+        }
       }
+      
+      // Validar MAQUINA y SOLICITANTE
       if (!datosMaquina.includes(maquinaInput.value)) {
         showError('Por favor, selecciona un valor válido para MAQUINA.');
         maquinaInput.focus();
@@ -247,7 +296,8 @@
         solicitanteInput.focus();
         return;
       }
-      // Validar que se haya seleccionado una opción en los dropdowns
+      
+      // Validar dropdowns
       const undSelect = document.getElementById('und_de_medidaSelect');
       if (undSelect.value === "") {
         showError('Por favor, selecciona una unidad de medida.');
@@ -260,24 +310,34 @@
         tipoSelect.focus();
         return;
       }
+      
+      // Recopilar valores de las descripciones
+      let descripcionValues = [];
+      allDescripcionInputs.forEach(function(input) {
+        if (input.value.trim() !== '') {
+          descripcionValues.push(input.value.trim());
+        }
+      });
 
-      // Mostrar spinner y enviar datos
+      // Preparar datos para enviar (incluye "jefe_responsable")
       const form = this;
-      const spinner = document.getElementById('spinner');
-      const confirmationMessage = document.getElementById('confirmationMessage');
-      spinner.style.display = 'block';
-      confirmationMessage.style.display = 'none';
-
       const data = {
-        descripcion: descripcionInput.value,
+        descripcion: descripcionValues,
         und_de_medida: undSelect.value,
         cantidad: form.querySelector('input[name="cantidad"]').value,
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
         maquina: maquinaInput.value,
-        solicitante: solicitanteInput.value
+        solicitante: solicitanteInput.value,
+        jefe_responsable: form.querySelector('select[name="jefe_responsable"]').value
       };
+
+      // Mostrar spinner y enviar datos
+      const spinner = document.getElementById('spinner');
+      const confirmationMessage = document.getElementById('confirmationMessage');
+      spinner.style.display = 'block';
+      confirmationMessage.style.display = 'none';
 
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwKnAzxJtVAkx7tED6OcFXWXfFQMFr7hpvW5uCd4jI6npEfkXo4fD2Rb4Gjiir55Xoc/exec';
       
@@ -303,4 +363,6 @@
   </script>
 </body>
 </html>
+
+
 
