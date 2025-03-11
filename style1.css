@@ -9,11 +9,11 @@
     --input-bg: #ffffff;
     --input-border: #dfe3e8;
     --input-focus: #3498db;
-    --header-bg: #e74c3c;         /* Fondo del encabezado del formulario */
-    --header-text: #ffffff;       /* Texto del encabezado */
-    --error-bg: #f8d7da;          /* Fondo del mensaje de error */
-    --error-text: #721c24;        /* Texto del mensaje de error */
-    --form-border: #3498db;       /* Color del borde del formulario */
+    --header-bg: #e74c3c;         /* Fondo alternativo si falla la imagen */
+    --header-text: #ffffff;
+    --error-bg: #f8d7da;
+    --error-text: #721c24;
+    --form-border: #3498db;
 }
 
 /* Reset y configuración global */
@@ -42,9 +42,14 @@ h2 {
     margin-bottom: 1.5rem;
 }
 
-/* Header principal */
+/* Header principal con imagen industrial */
 header.header {
-    background-color: var(--primario); /* Se usa el color primario para un look profesional */
+    background-image: url('imagenes/industrial-background.jpg'); /* Ruta de la imagen industrial */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Fallback en caso de no cargar la imagen */
+    background-color: var(--primario);
     color: var(--blanco);
     display: flex;
     justify-content: space-between;
@@ -56,6 +61,14 @@ header.header {
     left: 0;
     padding: 0 2rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    header.header {
+        padding: 0 1rem;
+        height: 4rem;
+        background-position: center;
+    }
 }
 
 /* Enlaces en el header */
@@ -282,3 +295,4 @@ footer {
         max-height: 300px;
     }
 }
+
