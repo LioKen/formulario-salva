@@ -194,7 +194,7 @@ select.input-text {
     background-color: var(--secundario);
 }
 
-/* Estilos para el botón de agregar descripción */
+/* Botón de agregar descripción */
 .add-btn {
     background-color: var(--primario);
     color: var(--blanco);
@@ -282,7 +282,7 @@ footer {
 }
 
 .suggestions-list li {
-    padding: 1.2rem;
+    padding: 1.2rem; /* Incrementado para mayor visibilidad */
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -291,12 +291,11 @@ footer {
     background-color: var(--grisclaro);
 }
 
-/* En móviles, lista de sugerencias aún más alta y con fuente mayor */
+/* En móviles, ajustar la lista de sugerencias */
 @media (max-width: 600px) {
     .suggestions-list {
         max-height: 700px;
         font-size: 1.8rem;
     }
 }
-
 
