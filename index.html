@@ -15,6 +15,64 @@
   
   <link rel="preload" href="style1.css" as="style">
   <link rel="stylesheet" href="style1.css">
+
+  <!-- Estilos adicionales para autocompletado y header -->
+  <style>
+    /* Autocompletar */
+    .autocomplete-container {
+      position: relative;
+    }
+    .suggestions-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background-color: var(--blanco);
+      border: 1px solid var(--input-border);
+      border-top: none;
+      max-height: 200px;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .suggestions-list li {
+      padding: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .suggestions-list li:hover {
+      background-color: var(--grisclaro);
+    }
+    
+    /* Header con imagen industrial */
+    header.header {
+      background-image: url('imagenes/industrial-background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: var(--primario); /* Fallback */
+      color: var(--blanco);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 5rem;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 0 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    @media (max-width: 768px) {
+      header.header {
+        padding: 0 1rem;
+        height: 4rem;
+        background-position: center;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -51,21 +109,22 @@
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         
         <div class="contenedor-campos">
-          <!-- CAMPO DESCRIPCION, CANTIDAD y UNIDAD DE MEDIDA por fila -->
+          <!-- CAMPO: DESCRIPCION, CANTIDAD y UNIDAD DE MEDIDA -->
           <div class="campo">
             <label>DESCRIPCION</label>
             <div id="descripcion-container">
-              <div class="descripcion-item autocomplete-container">
-                <!-- Input para la descripción -->
-                <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Descripción" autocomplete="off" required>
-                <!-- Input para la cantidad asociada -->
+              <div class="descripcion-item">
+                <!-- Contenedor exclusivo para el input autocompletable -->
+                <div class="autocomplete-container">
+                  <input type="text" name="descripcion[]" class="input-text descripcion-input" placeholder="Descripción" autocomplete="off" required>
+                  <ul class="suggestions-list"></ul>
+                </div>
+                <!-- Campo de cantidad -->
                 <input type="number" name="cantidad[]" class="input-text cantidad-input" placeholder="Cantidad" min="0" required>
-                <!-- Select para la unidad de medida -->
+                <!-- Campo select para unidad -->
                 <select name="und_de_medida[]" class="input-text" required>
                   <option value="">Selecciona la unidad</option>
                 </select>
-                <!-- Aquí se insertará el input oculto para el código (se crea dinámicamente) -->
-                <ul class="suggestions-list"></ul>
               </div>
             </div>
             <button type="button" id="addDescripcion" class="add-btn">+ Agregar</button>
@@ -139,8 +198,18 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Scripts para autocompletado, validación y manejo de múltiples filas -->
+  <!-- Scripts -->
   <script>
+    /* --- Función debounce para optimizar el input de autocompletado --- */
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+      };
+    }
+
     // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
     let datosUndDeMedida = [];
@@ -148,7 +217,7 @@
     let datosMaquina = [];
     let datosSolicitante = [];
 
-    // Cargar datos desde opciones.json
+    // Cargar datos desde opciones.json (se carga una sola vez)
     fetch('opciones.json')
       .then(response => response.json())
       .then(data => {
@@ -170,7 +239,7 @@
       })
       .catch(error => console.error('Error al cargar el archivo JSON:', error));
 
-    // Función para poblar un elemento select dado su id (para TIPO DE PEDIDO)
+    // Función para poblar un select dado su id
     function populateSelect(selectId, optionsArray) {
       const selectElement = document.getElementById(selectId);
       optionsArray.forEach(optionValue => {
@@ -181,7 +250,7 @@
       });
     }
 
-    // Función para poblar un select de unidad de medida dado un elemento select
+    // Función para poblar un select de unidad
     function populateUnidadSelect(selectElement, optionsArray) {
       selectElement.innerHTML = '<option value="">Selecciona la unidad</option>';
       optionsArray.forEach(optionValue => {
@@ -192,22 +261,22 @@
       });
     }
 
-    // Función para mostrar sugerencias en inputs autocompletable
+    // Función para mostrar sugerencias en el input
     function mostrarSugerencias(inputElement, suggestionsElement, datos) {
       const query = inputElement.value.toLowerCase();
       suggestionsElement.innerHTML = '';
       let filtrados = [];
-      // Si los datos son objetos (por ejemplo, de items) se filtra por item.descripcion
       if (datos.length > 0 && typeof datos[0] === 'object') {
         filtrados = datos.filter(item => item.descripcion.toLowerCase().includes(query));
       } else {
         filtrados = datos.filter(item => item.toLowerCase().includes(query));
       }
+      // Usar DocumentFragment para minimizar reflows
+      const fragment = document.createDocumentFragment();
       filtrados.forEach(item => {
         const li = document.createElement('li');
         if (typeof item === 'object') {
           li.textContent = item.descripcion;
-          // Guardamos el código en un atributo de datos (usamos la propiedad "codigo")
           li.setAttribute('data-codigo', item.codigo);
         } else {
           li.textContent = item;
@@ -215,8 +284,7 @@
         li.addEventListener('click', () => {
           inputElement.value = typeof item === 'object' ? item.descripcion : item;
           suggestionsElement.innerHTML = '';
-          // Si es el input de descripción, guardar el código en un input oculto
-          const container = inputElement.closest('.descripcion-item');
+          const container = inputElement.closest('.autocomplete-container');
           if (container) {
             let hiddenCodigoInput = container.querySelector('input.codigo-maquina-hidden');
             if (!hiddenCodigoInput) {
@@ -229,31 +297,35 @@
             hiddenCodigoInput.value = li.getAttribute('data-codigo') || '';
           }
         });
-        suggestionsElement.appendChild(li);
+        fragment.appendChild(li);
       });
+      suggestionsElement.appendChild(fragment);
     }
 
-    // Configurar autocompletado para un input de descripción
+    // Configurar autocompletado con debounce
     function setupAutocompleteForDescripcion(input) {
       const container = input.closest('.autocomplete-container');
       const suggestionsList = container.querySelector('.suggestions-list');
-      input.addEventListener('input', function() {
+      input.addEventListener('input', debounce(function() {
         mostrarSugerencias(input, suggestionsList, datosDescripcion);
-      });
+      }, 300));
     }
 
-    // Inicializar autocompletado en el input de descripción inicial
-    document.querySelectorAll('.descripcion-input').forEach(function(input) {
+    // Inicializar autocompletado para todos los inputs de descripción
+    document.querySelectorAll('.descripcion-input').forEach(input => {
       setupAutocompleteForDescripcion(input);
     });
 
-    // Agregar nuevas filas (descripción, cantidad y unidad) al hacer clic en el botón
-    document.getElementById('addDescripcion').addEventListener('click', function(e) {
+    // Agregar nuevas filas con DocumentFragment para mejorar el rendimiento
+    document.getElementById('addDescripcion').addEventListener('click', function() {
       const container = document.getElementById('descripcion-container');
+      const fragment = document.createDocumentFragment();
       const newDiv = document.createElement('div');
-      newDiv.className = 'descripcion-item autocomplete-container';
+      newDiv.className = 'descripcion-item';
 
-      // Nuevo input para descripción
+      // Crear contenedor exclusivo para el input autocompletable
+      const autocompleteDiv = document.createElement('div');
+      autocompleteDiv.className = 'autocomplete-container';
       const newDescInput = document.createElement('input');
       newDescInput.type = 'text';
       newDescInput.name = 'descripcion[]';
@@ -261,6 +333,10 @@
       newDescInput.placeholder = 'Descripción';
       newDescInput.setAttribute('autocomplete', 'off');
       newDescInput.required = true;
+      autocompleteDiv.appendChild(newDescInput);
+      const newUl = document.createElement('ul');
+      newUl.className = 'suggestions-list';
+      autocompleteDiv.appendChild(newUl);
 
       // Nuevo input para cantidad
       const newQtyInput = document.createElement('input');
@@ -271,13 +347,12 @@
       newQtyInput.min = '0';
       newQtyInput.required = true;
 
-      // Nuevo select para unidad de medida
+      // Nuevo select para unidad
       const newUmSelect = document.createElement('select');
       newUmSelect.name = 'und_de_medida[]';
       newUmSelect.className = 'input-text';
       newUmSelect.required = true;
       newUmSelect.innerHTML = '<option value="">Selecciona la unidad</option>';
-      // Poblar el select con las opciones
       datosUndDeMedida.forEach(optionValue => {
         const option = document.createElement('option');
         option.value = optionValue;
@@ -285,34 +360,29 @@
         newUmSelect.appendChild(option);
       });
 
-      // Crear la lista de sugerencias
-      const newUl = document.createElement('ul');
-      newUl.className = 'suggestions-list';
-
-      newDiv.appendChild(newDescInput);
+      newDiv.appendChild(autocompleteDiv);
       newDiv.appendChild(newQtyInput);
       newDiv.appendChild(newUmSelect);
-      newDiv.appendChild(newUl);
-      container.appendChild(newDiv);
+      fragment.appendChild(newDiv);
+      container.appendChild(fragment);
 
-      // Configurar autocompletado para el nuevo input de descripción
       setupAutocompleteForDescripcion(newDescInput);
     });
 
-    // Configurar autocompletado para MAQUINA y SOLICITANTE
+    // Autocompletado para MAQUINA y SOLICITANTE
     const maquinaInput = document.getElementById('maquinaInput');
     const maquinaSuggestions = document.getElementById('maquinaSuggestions');
-    maquinaInput.addEventListener('input', function() {
+    maquinaInput.addEventListener('input', debounce(function() {
       mostrarSugerencias(maquinaInput, maquinaSuggestions, datosMaquina);
-    });
+    }, 300));
 
     const solicitanteInput = document.getElementById('solicitanteInput');
     const solicitanteSuggestions = document.getElementById('solicitanteSuggestions');
-    solicitanteInput.addEventListener('input', function() {
+    solicitanteInput.addEventListener('input', debounce(function() {
       mostrarSugerencias(solicitanteInput, solicitanteSuggestions, datosSolicitante);
-    });
+    }, 300));
 
-    // Cerrar sugerencias al hacer clic fuera de la caja de autocompletar
+    // Cerrar sugerencias al hacer clic fuera del contenedor
     document.addEventListener('click', function(e) {
       document.querySelectorAll('.autocomplete-container').forEach(container => {
         if (!container.contains(e.target)) {
@@ -321,7 +391,7 @@
       });
     });
 
-    // Funciones para mostrar y limpiar mensajes de error
+    // Funciones para mensajes de error
     function showError(message) {
       const errorDiv = document.getElementById('errorMessage');
       errorDiv.textContent = message;
@@ -343,13 +413,12 @@
       let cantidadArray = [];
       let undArray = [];
       let codigoMaquinaArray = [];
-      
-      for (let i = 0; i < items.length; i++) {
-        const descInput = items[i].querySelector('input[name="descripcion[]"]');
-        const qtyInput = items[i].querySelector('input[name="cantidad[]"]');
-        const umSelect = items[i].querySelector('select[name="und_de_medida[]"]');
 
-        // Validar que el valor ingresado existe en los items (basado en la propiedad descripcion)
+      items.forEach(item => {
+        const descInput = item.querySelector('input[name="descripcion[]"]');
+        const qtyInput = item.querySelector('input[name="cantidad[]"]');
+        const umSelect = item.querySelector('select[name="und_de_medida[]"]');
+
         if (!datosDescripcion.some(item => item.descripcion === descInput.value)) {
           showError('Por favor, selecciona un valor válido para DESCRIPCION.');
           descInput.focus();
@@ -368,16 +437,9 @@
         descripcionArray.push(descInput.value.trim());
         cantidadArray.push(qtyInput.value.trim());
         undArray.push(umSelect.value);
-        
-        // Obtener el código (desde el input oculto)
-        const hiddenCodigoInput = items[i].querySelector('input.codigo-maquina-hidden');
-        if (hiddenCodigoInput && hiddenCodigoInput.value) {
-          codigoMaquinaArray.push(hiddenCodigoInput.value.trim());
-        } else {
-          // Si no se encontró, se deja vacío o se podría manejar un error
-          codigoMaquinaArray.push("");
-        }
-      }
+        const hiddenCodigoInput = item.querySelector('input.codigo-maquina-hidden');
+        codigoMaquinaArray.push(hiddenCodigoInput && hiddenCodigoInput.value ? hiddenCodigoInput.value.trim() : "");
+      });
 
       const tipoSelect = document.getElementById('tipo_de_pedidoSelect');
       if (tipoSelect.value === "") {
@@ -391,7 +453,7 @@
         descripcion: descripcionArray,
         cantidad: cantidadArray,
         und_de_medida: undArray,
-        codigo_maquina: codigoMaquinaArray, // Se envía el código asociado a cada descripción (tomado de "codigo")
+        codigo_maquina: codigoMaquinaArray,
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
@@ -400,14 +462,12 @@
         jefe_responsable: form.querySelector('select[name="jefe_responsable"]').value
       };
 
-      // Mostrar spinner y enviar datos
       const spinner = document.getElementById('spinner');
       const confirmationMessage = document.getElementById('confirmationMessage');
       spinner.style.display = 'block';
       confirmationMessage.style.display = 'none';
 
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwKnAzxJtVAkx7tED6OcFXWXfFQMFr7hpvW5uCd4jI6npEfkXo4fD2Rb4Gjiir55Xoc/exec';
-      
       fetch(scriptURL, {
         method: 'POST',
         mode: 'no-cors',
