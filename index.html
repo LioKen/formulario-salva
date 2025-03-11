@@ -64,7 +64,7 @@
                 <select name="und_de_medida[]" class="input-text" required>
                   <option value="">Selecciona la unidad</option>
                 </select>
-                <!-- Aquí se insertará el input oculto de codigo_maquina de forma dinámica -->
+                <!-- Aquí se insertará el input oculto para el código (se crea dinámicamente) -->
                 <ul class="suggestions-list"></ul>
               </div>
             </div>
@@ -152,8 +152,8 @@
     fetch('opciones.json')
       .then(response => response.json())
       .then(data => {
-        // Ahora usamos el array "Items" para autocompletar la descripción
-        datosDescripcion = data.Items || [];
+        // Usamos el array "items" (en minúsculas) para autocompletar la descripción
+        datosDescripcion = data.items || [];
         datosUndDeMedida = data.und_de_medida || [];
         datosTipoDePedido = data.tipo_de_pedido || [];
         datosMaquina = data.maquina || [];
@@ -197,7 +197,7 @@
       const query = inputElement.value.toLowerCase();
       suggestionsElement.innerHTML = '';
       let filtrados = [];
-      // Si los datos son objetos (por ejemplo, de Items) se filtra por item.descripcion
+      // Si los datos son objetos (por ejemplo, de items) se filtra por item.descripcion
       if (datos.length > 0 && typeof datos[0] === 'object') {
         filtrados = datos.filter(item => item.descripcion.toLowerCase().includes(query));
       } else {
@@ -207,8 +207,8 @@
         const li = document.createElement('li');
         if (typeof item === 'object') {
           li.textContent = item.descripcion;
-          // Guardamos el código de máquina en un atributo de datos
-          li.setAttribute('data-codigo', item.codigo_maquina);
+          // Guardamos el código en un atributo de datos (usamos la propiedad "codigo")
+          li.setAttribute('data-codigo', item.codigo);
         } else {
           li.textContent = item;
         }
@@ -349,7 +349,7 @@
         const qtyInput = items[i].querySelector('input[name="cantidad[]"]');
         const umSelect = items[i].querySelector('select[name="und_de_medida[]"]');
 
-        // Validar que el valor ingresado existe en los Items (basado en la propiedad descripcion)
+        // Validar que el valor ingresado existe en los items (basado en la propiedad descripcion)
         if (!datosDescripcion.some(item => item.descripcion === descInput.value)) {
           showError('Por favor, selecciona un valor válido para DESCRIPCION.');
           descInput.focus();
@@ -369,7 +369,7 @@
         cantidadArray.push(qtyInput.value.trim());
         undArray.push(umSelect.value);
         
-        // Obtener el código de máquina del input oculto
+        // Obtener el código (desde el input oculto)
         const hiddenCodigoInput = items[i].querySelector('input.codigo-maquina-hidden');
         if (hiddenCodigoInput && hiddenCodigoInput.value) {
           codigoMaquinaArray.push(hiddenCodigoInput.value.trim());
@@ -391,7 +391,7 @@
         descripcion: descripcionArray,
         cantidad: cantidadArray,
         und_de_medida: undArray,
-        codigo_maquina: codigoMaquinaArray, // Se envía el código asociado a cada descripción
+        codigo_maquina: codigoMaquinaArray, // Se envía el código asociado a cada descripción (tomado de "codigo")
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
@@ -430,4 +430,5 @@
   </script>
 </body>
 </html>
+
 
