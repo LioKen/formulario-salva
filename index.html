@@ -64,6 +64,7 @@
                 <select name="und_de_medida[]" class="input-text" required>
                   <option value="">Selecciona la unidad</option>
                 </select>
+                <!-- Aquí se insertará el input oculto de codigo_maquina de forma dinámica -->
                 <ul class="suggestions-list"></ul>
               </div>
             </div>
@@ -138,7 +139,7 @@
     Por favor, si tiene inconvenientes, comuníquese con ********
   </footer>
 
-  <!-- Scripts para autocompletado, validación y manejo de múltiples filas (descripción, cantidad y unidad) -->
+  <!-- Scripts para autocompletado, validación y manejo de múltiples filas -->
   <script>
     // Variables para almacenar datos (se cargarán desde opciones.json)
     let datosDescripcion = [];
@@ -151,7 +152,8 @@
     fetch('opciones.json')
       .then(response => response.json())
       .then(data => {
-        datosDescripcion = data.descripcion || [];
+        // Ahora usamos el array "Items" para autocompletar la descripción
+        datosDescripcion = data.Items || [];
         datosUndDeMedida = data.und_de_medida || [];
         datosTipoDePedido = data.tipo_de_pedido || [];
         datosMaquina = data.maquina || [];
@@ -194,13 +196,38 @@
     function mostrarSugerencias(inputElement, suggestionsElement, datos) {
       const query = inputElement.value.toLowerCase();
       suggestionsElement.innerHTML = '';
-      const filtrados = datos.filter(item => item.toLowerCase().includes(query));
+      let filtrados = [];
+      // Si los datos son objetos (por ejemplo, de Items) se filtra por item.descripcion
+      if (datos.length > 0 && typeof datos[0] === 'object') {
+        filtrados = datos.filter(item => item.descripcion.toLowerCase().includes(query));
+      } else {
+        filtrados = datos.filter(item => item.toLowerCase().includes(query));
+      }
       filtrados.forEach(item => {
         const li = document.createElement('li');
-        li.textContent = item;
+        if (typeof item === 'object') {
+          li.textContent = item.descripcion;
+          // Guardamos el código de máquina en un atributo de datos
+          li.setAttribute('data-codigo', item.codigo_maquina);
+        } else {
+          li.textContent = item;
+        }
         li.addEventListener('click', () => {
-          inputElement.value = item;
+          inputElement.value = typeof item === 'object' ? item.descripcion : item;
           suggestionsElement.innerHTML = '';
+          // Si es el input de descripción, guardar el código en un input oculto
+          const container = inputElement.closest('.descripcion-item');
+          if (container) {
+            let hiddenCodigoInput = container.querySelector('input.codigo-maquina-hidden');
+            if (!hiddenCodigoInput) {
+              hiddenCodigoInput = document.createElement('input');
+              hiddenCodigoInput.type = 'hidden';
+              hiddenCodigoInput.name = 'codigo_maquina[]';
+              hiddenCodigoInput.className = 'codigo-maquina-hidden';
+              container.appendChild(hiddenCodigoInput);
+            }
+            hiddenCodigoInput.value = li.getAttribute('data-codigo') || '';
+          }
         });
         suggestionsElement.appendChild(li);
       });
@@ -258,6 +285,7 @@
         newUmSelect.appendChild(option);
       });
 
+      // Crear la lista de sugerencias
       const newUl = document.createElement('ul');
       newUl.className = 'suggestions-list';
 
@@ -314,12 +342,15 @@
       let descripcionArray = [];
       let cantidadArray = [];
       let undArray = [];
+      let codigoMaquinaArray = [];
+      
       for (let i = 0; i < items.length; i++) {
         const descInput = items[i].querySelector('input[name="descripcion[]"]');
         const qtyInput = items[i].querySelector('input[name="cantidad[]"]');
         const umSelect = items[i].querySelector('select[name="und_de_medida[]"]');
 
-        if (!datosDescripcion.includes(descInput.value)) {
+        // Validar que el valor ingresado existe en los Items (basado en la propiedad descripcion)
+        if (!datosDescripcion.some(item => item.descripcion === descInput.value)) {
           showError('Por favor, selecciona un valor válido para DESCRIPCION.');
           descInput.focus();
           return;
@@ -337,6 +368,15 @@
         descripcionArray.push(descInput.value.trim());
         cantidadArray.push(qtyInput.value.trim());
         undArray.push(umSelect.value);
+        
+        // Obtener el código de máquina del input oculto
+        const hiddenCodigoInput = items[i].querySelector('input.codigo-maquina-hidden');
+        if (hiddenCodigoInput && hiddenCodigoInput.value) {
+          codigoMaquinaArray.push(hiddenCodigoInput.value.trim());
+        } else {
+          // Si no se encontró, se deja vacío o se podría manejar un error
+          codigoMaquinaArray.push("");
+        }
       }
 
       const tipoSelect = document.getElementById('tipo_de_pedidoSelect');
@@ -351,6 +391,7 @@
         descripcion: descripcionArray,
         cantidad: cantidadArray,
         und_de_medida: undArray,
+        codigo_maquina: codigoMaquinaArray, // Se envía el código asociado a cada descripción
         tipo_de_pedido: tipoSelect.value,
         ot: form.querySelector('input[name="ot"]').value,
         detalle_ubicacion_maquina: form.querySelector('input[name="detalle_ubicacion_maquina"]').value,
@@ -389,3 +430,4 @@
   </script>
 </body>
 </html>
+
