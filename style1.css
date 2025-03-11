@@ -272,27 +272,31 @@ footer {
     background-color: var(--blanco);
     border: 1px solid var(--input-border);
     border-top: none;
-    max-height: 200px;
+    max-height: 300px; /* Aumentada para PC */
     overflow-y: auto;
     z-index: 1000;
     list-style: none;
     padding: 0;
     margin: 0;
+    font-size: 1.6rem; /* Tamaño de fuente mayor para PC */
 }
 
 .suggestions-list li {
-    padding: 1rem;
+    padding: 1.2rem; /* Más padding para mejor visibilidad */
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .suggestions-list li:hover {
     background-color: var(--grisclaro);
 }
 
-/* En móviles, lista de sugerencias más alta */
+/* En móviles, lista de sugerencias aún más alta y con fuente mayor */
 @media (max-width: 600px) {
     .suggestions-list {
-        max-height: 300px;
+        max-height: 400px;
+        font-size: 1.8rem;
     }
 }
+
 
